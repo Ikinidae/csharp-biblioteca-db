@@ -8,9 +8,29 @@ SqlConnection connessioneSql = new SqlConnection(stringaDiConnessione);
 try
 {
     connessioneSql.Open();
-    
 
-    
+    //crud.creaPrestito("pippo", "15/11/2022", "17/11/2022", 2, connessioneSql);
+
+    Console.WriteLine("Scrivi il titolo del documento da cercare: ");
+    string userInputDocumento = Console.ReadLine();
+
+    int documento_id = crud.ricercaDocumento(userInputDocumento, connessioneSql);
+
+    Console.WriteLine("Vuoi prenotare il documento? [si/no]");
+    string userInput = Console.ReadLine();
+
+    if (userInput == "si")
+    {
+        Console.WriteLine("Inserire nome utente");
+        string userNome = Console.ReadLine();
+        Console.WriteLine("Inserire data inizio prestito");
+        string dataInizio = Console.ReadLine();
+        Console.WriteLine("Inserire data fine prestito");
+        string dataFine = Console.ReadLine();
+        crud.creaPrestito(userNome, dataInizio, dataFine, documento_id, connessioneSql);
+        //crud.creaPrestito("pippo", "15/11/2022", "17/11/2022", 2, connessioneSql);
+    }
+
 
 }
 catch (Exception e)
@@ -25,67 +45,46 @@ finally
 
 return;
 
-public void Prestito()
-{
-    Console.WriteLine("Vuoi cercare un libro o un dvd? [libro/dvd] ");
-    string userInput = Console.ReadLine();
+//void Prestito()
+//{
+//    Console.WriteLine("Scrivi il titolo del documento da cercare: ");
+//    string userInputDocumento = Console.ReadLine();
 
-    if (userInput == "libro")
-    {
-        Console.WriteLine("Scrivi il codice o il titolo del libro da cercare: ");
-        string userInputLibro = Console.ReadLine();
+    
 
-        foreach (Libro libro in Libri)
-        {
-            if (userInputLibro == libro.Titolo || userInputLibro == libro.Isbn)
-            {
-                if (libro.Stato == true)
-                {
-                    Console.WriteLine("il libro ricercato è disponibile");
-                    EffettuaPrestito(userInputLibro);
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("il libro non è disponibile");
-                }
-            }
-        }
-
-    }
-    else if (userInput == "dvd")
-    {
-        Console.WriteLine("Scrivi il codice o il titolo del dvd da cercare: ");
-        string userInputDvd = Console.ReadLine();
-
-        foreach (Dvd dvd in Dvd)
-        {
-            if (userInputDvd == dvd.Titolo || userInputDvd == dvd.Codice)
-            {
-                if (dvd.Stato == true)
-                {
-                    Console.WriteLine("il dvd ricercato è disponibile");
-                    EffettuaPrestito(userInputDvd);
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("il dvd ricercato non è disponibile");
-                }
-            }
-        }
-    }
-    else
-    {
-        Console.WriteLine("inserisci un valore corretto");
-        Prestito();
-    }
-}
+//    }
+//    else
+//    {
+//        Console.WriteLine("inserisci un valore corretto");
+//        Prestito();
+//    }
+//}
 
 
 public class crud
 {
-    public void creaPrestito (string nome_utente, string data_inizio, string data_fine, int documento_id, SqlConnection connessioneSql)
+    public static int ricercaDocumento (string titolo_documento, SqlConnection connessioneSql)
+    {
+        string researchQuery = "SELECT * FROM documenti WHERE titolo=@titolo";
+        SqlCommand insertCommand = new SqlCommand(researchQuery, connessioneSql);
+
+        insertCommand.Parameters.Add(new SqlParameter("@titolo", titolo_documento));
+        SqlDataReader reader = insertCommand.ExecuteReader();
+        int documento_id = 0;
+
+        while (reader.Read())
+        {
+            string titolo = reader.GetString(1);
+            Console.WriteLine(titolo);
+            documento_id = reader.GetInt32(0);
+            Console.WriteLine(documento_id);            
+        }
+
+        reader.Close();
+        return documento_id;
+    }
+
+    public static void creaPrestito (string nome_utente, string data_inizio, string data_fine, int documento_id, SqlConnection connessioneSql)
     {
         string insertQuery = "INSERT INTO prestiti (codice_prestito, nome_utente, data_inizio, data_fine, documento_id)" +
         "VALUES (@codice_prestito, @nome_utente, @data_inizio, @data_fine, @documento_id)";
