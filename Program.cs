@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System.Data;
+using System.Data.SqlClient;
 
 string stringaDiConnessione = "Data Source=localhost;Initial Catalog=db-biblioteca;Integrated Security=True";
 
@@ -9,7 +10,7 @@ try
 {
     connessioneSql.Open();
 
-    //crud.creaPrestito("pippo", "15/11/2022", "17/11/2022", 2, connessioneSql);
+    crud.ricercaPrestito("pippo", connessioneSql);
 
     Console.WriteLine("Scrivi il titolo del documento da cercare: ");
     string userInputDocumento = Console.ReadLine();
@@ -28,10 +29,7 @@ try
         Console.WriteLine("Inserire data fine prestito");
         string dataFine = Console.ReadLine();
         crud.creaPrestito(userNome, dataInizio, dataFine, documento_id, connessioneSql);
-        //crud.creaPrestito("pippo", "15/11/2022", "17/11/2022", 2, connessioneSql);
     }
-
-
 }
 catch (Exception e)
 {
@@ -45,20 +43,6 @@ finally
 
 return;
 
-//void Prestito()
-//{
-//    Console.WriteLine("Scrivi il titolo del documento da cercare: ");
-//    string userInputDocumento = Console.ReadLine();
-
-    
-
-//    }
-//    else
-//    {
-//        Console.WriteLine("inserisci un valore corretto");
-//        Prestito();
-//    }
-//}
 
 
 public class crud
@@ -99,6 +83,35 @@ public class crud
         insertCommand.Parameters.Add(new SqlParameter("@documento_id", documento_id));
 
         int insertRows = insertCommand.ExecuteNonQuery();
+    }
+
+    public static void ricercaPrestito (string nome_utente, SqlConnection connessioneSql)
+    {
+        string researchQuery = "SELECT * FROM prestiti WHERE nome_utente=@nome_utente";
+        SqlCommand insertCommand = new SqlCommand(researchQuery, connessioneSql);
+
+        insertCommand.Parameters.Add(new SqlParameter("@nome_utente", nome_utente));
+        SqlDataReader reader = insertCommand.ExecuteReader();
+
+        while (reader.Read())
+        {
+            string nomeUtenteRicercato = reader.GetString(1);
+            Console.WriteLine("Nome utente: " + nomeUtenteRicercato);
+            
+            int codicePrestito = reader.GetInt16(2);
+            Console.WriteLine("Codice prestito: " + codicePrestito);
+            
+            DateTime dataInizio = reader.GetDateTime(3);
+            Console.WriteLine("Data inizio:" + dataInizio);
+
+            DateTime dataFine = reader.GetDateTime(4);
+            Console.WriteLine("Data fine:" + dataFine);
+
+            int documentoId = reader.GetInt32(5);
+            Console.WriteLine("Id documento:" + documentoId);
+        }
+
+        reader.Close();
     }
 }
 
